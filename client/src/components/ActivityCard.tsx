@@ -36,11 +36,12 @@ function ActivityCard({
     //  !User navigate to sign up (To implement when we will see connection)
 
     if (nbAvailableSpots === 0) {
+      return;
       // ? button is showing alert, user can click to put oneself to wait list and receive email when nb !== 0 (reminder: probably I'll use useMemo)
     }
 
     const newParticipant = {
-      userId: 25,
+      userId: 1,
       activityId: activity.id,
       status: activity.auto_validation ? "accepted" : "request",
     };

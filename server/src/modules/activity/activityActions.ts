@@ -74,4 +74,21 @@ const browseMine: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default { add, browse, browseMine };
+const read: RequestHandler = async (req, res, next) => {
+  try {
+    const activityId = Number.parseInt(req.params.id, 10);
+
+    const activity = await activityRepository.readOne(activityId);
+
+    if (!activity) {
+      res.status(StatusCodes.NOT_FOUND).json({ error: "Activity not found" });
+      return;
+    }
+
+    res.json(activity);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export default { add, browse, browseMine, read };

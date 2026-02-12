@@ -1,5 +1,5 @@
 import express from "express";
-import activityActions from "./modules/activity/activityActions";
+import activityActions from "./modules/Activity/activityActions";
 import sportActions from "./modules/sport/sportActions";
 import userActions from "./modules/user/userActions";
 import participationActions from "./modules/participation/participationActions";
@@ -14,6 +14,12 @@ router.post("/api/activity", activityActions.add);
 
 router.get("/api/activities", activityActions.browse);
 router.get("/api/activities/me", activityActions.browseMine);
+router.post(
+  "/api/users",
+  userActions.validate,
+  userActions.add,
+);
+router.get("/api/activities/:id", activityActions.read);
 
 router.get("/api/participations", participationActions.browseSome);
 router.get("/api/participants", participationActions.browseByActivity);

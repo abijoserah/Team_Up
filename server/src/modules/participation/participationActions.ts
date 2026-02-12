@@ -19,7 +19,6 @@ const browseByActivity: RequestHandler = async (req, res, next) => {
 
 const add: RequestHandler = async (req, res, next) => {
   try {
-    req.body.userId = 25;
     const response = await participationRepository.create(req.body);
 
     res.json(response);

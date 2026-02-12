@@ -32,4 +32,21 @@ type Activity = {
 type User = {
   id: number;
   email: string;
+  username: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  born_at: string;
+  address: string;
+  city: string;
+  zipCode: string;
+  phone: string;
+  picture: string;
+};
+
+type Participant = {
+  id: number;
+  username: string;
+  picture: string;
+  status: string;
 };

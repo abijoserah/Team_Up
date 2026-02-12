@@ -1,17 +1,7 @@
-import { useState } from "react";
 import "../styles/SearchFilters.css";
+import { useEffect, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import { useNavigate } from "react-router";
-
-type Filters = {
-  locker: boolean;
-  shower: boolean;
-  toilet: boolean;
-  air_conditioning: boolean;
-  level: string | null;
-  price: number | null;
-  disabled: boolean;
-};
 
 type SearchFilterProps = {
   setFilters?: React.Dispatch<
@@ -21,11 +11,12 @@ type SearchFilterProps = {
       city: string;
     }>
   >;
+  filters?: OptionalFilters;
   onClose?: () => void;
 };
 
 type EquipmentOptionsType = {
-  key: keyof Filters;
+  key: keyof OptionalFilters;
   label: string;
 };
 
@@ -58,27 +49,35 @@ const initialState = {
   disabled: false,
 };
 
-function SearchFilters({ setFilters, onClose }: SearchFilterProps) {
-  const [optionalFilters, setOptionalFilters] = useState<Filters>(initialState);
+function SearchFilters({ filters, setFilters, onClose }: SearchFilterProps) {
+  const [optionalFilters, setOptionalFilters] =
+    useState<OptionalFilters>(initialState);
   const [prevPayedPrice, setPrevPayedPrice] = useState(15);
 
   const isFree = optionalFilters.price === 0;
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    setOptionalFilters((prev) => {
+      return {
+        ...prev,
+        locker: filters?.locker ?? false,
+        shower: filters?.shower ?? false,
+        toilet: filters?.toilet ?? false,
+        air_conditioning: filters?.air_conditioning ?? false,
+        level: filters?.level ?? null,
+        price: filters?.price ?? null,
+        disabled: filters?.disabled ?? false,
+      };
+    });
+  }, [filters]);
 
-  const resetFilters = () => {
-    setOptionalFilters(initialState);
-    setFilters?.((prev) => ({
-      ...prev,
-      optionalFilters,
-    }));
-  };
+  const navigate = useNavigate();
 
   const updateFilters = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked, value } = e.target;
 
     setOptionalFilters((prev) => {
-      const updates: Record<string, Partial<Filters>> = {
+      const updates: Record<string, Partial<OptionalFilters>> = {
         equipment: { [value]: checked },
         level: { level: value },
         price: { price: checked ? 0 : prevPayedPrice },
@@ -101,6 +100,14 @@ function SearchFilters({ setFilters, onClose }: SearchFilterProps) {
     });
     onClose?.();
     navigate("/activities/page/1");
+  };
+
+  const resetFilters = () => {
+    setOptionalFilters(initialState);
+    setFilters?.((prev) => ({
+      ...prev,
+      ...initialState,
+    }));
   };
 
   const isMobile = useMediaQuery({ query: "(max-width: 1023px)" });
