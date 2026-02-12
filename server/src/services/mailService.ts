@@ -9,7 +9,7 @@ async function sendInvitationAcceptedEmail({
   participantUsername,
 }: InvitationAcceptedEmail) {
   const response = await resend.emails.send({
-    from: "TeamUp <onboarding@resend.dev>",
+    from: "TeamUp <noreply@linkrefine.com>",
     to: organizerEmail,
     subject: `${participantUsername} a accepté votre invitation`,
     html: `
