@@ -5,6 +5,7 @@ import { useState } from "react";
 import "../styles/SignUp.css";
 import { Link, useNavigate } from "react-router";
 import toast from "react-hot-toast";
+import { useAuth } from "../context/AuthContext";
 
 type NewUser = Omit<User, "id"> & {
   confirmPassword: string;
@@ -27,6 +28,7 @@ function SignUp() {
   });
 
   const navigate = useNavigate();
+  const { setAuth } = useAuth();
   const [error, setError] = useState({
     field: "",
     message: "",
@@ -56,14 +58,31 @@ function SignUp() {
             : setError((prev) => ({ ...prev, message: "Erreur serveur" }));
         return;
       }
-      navigate("/sign-in", {
-        state: {
-          from: "/sign-up",
+      const loginResponse = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: user.email,
+            password: user.password,
+          }),
         },
-      });
-      setTimeout(() => {
-        toast.success("Compte créé avec succès");
-      }, 50);
+      );
+
+      if (loginResponse.status === 200) {
+        const authData = await loginResponse.json();
+        setAuth(authData);
+        navigate("/");
+        setTimeout(() => {
+          toast.success("Compte créé avec succès");
+        }, 50);
+      } else {
+        navigate("/sign-in");
+        setTimeout(() => {
+          toast.success("Compte créé, veuillez vous connecter");
+        }, 50);
+      }
     } catch (error) {
       setError((prev) => ({
         ...prev,
