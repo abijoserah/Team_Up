@@ -5,9 +5,10 @@ import SearchFilters from "./SearchFilters";
 
 type SearchBarProps = {
   setFilters: React.Dispatch<React.SetStateAction<Filters>>;
+  filters: Filters;
 };
 
-function SearchBar({ setFilters }: SearchBarProps) {
+function SearchBar({ setFilters, filters }: SearchBarProps) {
   const [cities, setCities] = useState<City[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);
   const [error, setError] = useState({
@@ -202,7 +203,11 @@ function SearchBar({ setFilters }: SearchBarProps) {
           onKeyDown={(e) => e.key === "Escape" && closeCriteriaModal()}
           className="modal-criteria"
         >
-          <SearchFilters onClose={closeCriteriaModal} setFilters={setFilters} />
+          <SearchFilters
+            onClose={closeCriteriaModal}
+            setFilters={setFilters}
+            filters={filters}
+          />
         </dialog>
       </section>
     </>

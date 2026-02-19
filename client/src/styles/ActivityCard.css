@@ -32,6 +32,7 @@
 
 @media (min-width: 1024px) {
   .card {
+    transition: box-shadow 0.3s ease-in-out;
     &:hover {
       box-shadow: 0 0px 16px 0 var(--accent-color);
     }
@@ -53,10 +54,28 @@
   align-items: flex-end;
   padding: 0 8px 8px 8px;
   color: var(--light-color);
+  position: relative;
+
+  & > .icon-lock {
+    position: absolute;
+    top: 5px;
+    left: 88%;
+    width: 1.8rem;
+    height: 1.8rem;
+    border-radius: 2rem;
+    background-color: var(--accent-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    & > img {
+      width: 1.2rem;
+    }
+  }
 
   & > h2 {
     text-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-    z-index: 2;
+    z-index: 0;
   }
 
   & .label-price {
@@ -69,7 +88,7 @@
     justify-content: center;
     align-items: center;
     box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
-    z-index: 2;
+    z-index: 0;
   }
 
   & .free {
@@ -466,6 +485,11 @@
   &:hover {
     cursor: pointer;
   }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -538,16 +562,13 @@
 }
 
 .invitation-buttons button {
-  font-family: var(--body-highlight-font);
-  font-size: var(--body-size);
   border: none;
   color: var(--light-color);
+  width: 75px;
   height: 18px;
-  width: 69px;
   border-radius: 6px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  font-size: var(--body-size);
+  font-family: var(--body-font);
 }
 
 .refuse-button {
@@ -560,14 +581,17 @@
 
 @media (min-width: 1024px) {
   .invitation-buttons button {
-    height: 24px;
-    width: 80px;
-    border-radius: 8px;
+    border: none;
+    color: var(--light-color);
+    width: 75px;
+    height: 28px;
+    border-radius: 6px;
+    font-size: var(--body-desktop-size);
     cursor: pointer;
-    transition: transform 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
 
     &:hover {
-      transform: scale(1.05);
+      box-shadow: inset 0 8px 8px -8px rgba(0, 0, 0, 0.5);
     }
   }
 }

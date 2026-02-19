@@ -3,7 +3,7 @@
 }
 
 .hero-wrapper {
-  background: url("logo-op.png");
+  background-image: url("logo-op.png");
   background-repeat: no-repeat;
   background-size: 280px;
   height: 280px;
@@ -31,24 +31,38 @@ article.homepage-article {
   height: 120px;
   margin: auto;
   display: flex;
+  flex-direction: column;
   box-shadow: 0px 4px 24px 0px rgba(0, 0, 0, 0.2);
   border-radius: 10px;
   padding: 0 1rem;
-  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   background-color: var(--light-color);
 }
 
 .homepage div.hero-wrapper .homepage-article {
-  padding-top: 12px;
   align-items: flex-start;
   text-align: center;
   justify-content: center;
 }
 
-article.homepage-article p {
-  font-family: var(--body-font);
-  font-size: var(--body-size);
-  line-height: 1.4;
+article.homepage-article {
+  & p:nth-of-type(1) {
+    font-family: var(--body-font);
+    font-size: var(--body-size);
+    line-height: 1.4;
+  }
+
+  & .presentation {
+    margin-top: -0.8rem;
+  }
+
+  & p:nth-of-type(2) {
+    width: 100%;
+    font-family: var(--button-font);
+    font-size: var(--button-size);
+    line-height: 1.4;
+  }
 }
 
 .faq-wrapper .homepage-subtitle {
@@ -77,7 +91,7 @@ article.homepage-article p strong {
   top: -30px;
 }
 
-.homepage-button-wrapper button {
+.homepage-button-wrapper a {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -92,7 +106,7 @@ article.homepage-article p strong {
   box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
 }
 
-.homepage-button-wrapper button img {
+.homepage-button-wrapper a img {
   width: 15px;
   height: 15px;
 }
@@ -136,6 +150,15 @@ article.homepage-article p strong {
     width: 100%;
   }
 
+  .hero-wrapper {
+    background-image: url("/logo-op.png");
+    background-repeat: no-repeat;
+    background-size: 300px;
+    height: 300px;
+    padding-top: 40px;
+    background-position: right;
+  }
+
   .hero-wrapper .homepage-article {
     width: 60%;
   }
@@ -148,9 +171,15 @@ article.homepage-article p strong {
     font-size: var(--heading-desktop-size);
   }
 
-  article.homepage-article p {
-    font-size: var(--body-desktop-size);
-    line-height: 1.4;
+  article.homepage-article {
+    & p:nth-of-type(1) {
+      font-size: var(--body-desktop-size);
+      line-height: 1.4;
+    }
+
+    & p:nth-of-type(2) {
+      font-size: var(--button-desktop-size);
+    }
   }
 
   .hero-wrapper {
@@ -173,18 +202,21 @@ article.homepage-article p strong {
     top: -37px;
   }
 
-  .homepage-button-wrapper button {
+  .homepage-button-wrapper a {
     font-size: var(--button-desktop-size);
     width: 133px;
     height: 45px;
+    transition: box-shadow 3s ease-in-out;
+    transition: all 0.2s ease;
   }
 
-  .homepage-button-wrapper button img {
-    width: 20px;
-    height: 20px;
+  .homepage-button-wrapper a:hover {
+    cursor: pointer;
+    transform: translateY(1px);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
   }
 
-  .homepage-button-wrapper button:hover {
+  .homepage-button-wrapper a:hover {
     cursor: pointer;
     box-shadow: inset 0 8px 8px -8px rgba(0, 0, 0, 0.5);
   }

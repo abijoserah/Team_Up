@@ -2,8 +2,15 @@
   overflow: hidden;
 }
 
+.embla__viewport {
+  overflow: hidden; /* obligatoire */
+  cursor: grab;
+}
+
 .embla__container {
   display: flex;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .embla__slide {
@@ -13,7 +20,7 @@
   padding: 20px 10px;
 }
 
-.embla__slide.is-active {
+.embla__slide.is-visible {
   opacity: 1;
 }
 

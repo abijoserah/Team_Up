@@ -8,7 +8,7 @@
   justify-content: space-around;
   align-items: center;
   background-color: var(--dark-color);
-  box-shadow: 0 -4px 4px rgba(46, 46, 46, 0.25);
+  z-index: 10;
 
   &::before {
     content: "";
@@ -34,12 +34,6 @@
 
   & > .top-navbar {
     margin-right: 2.5rem;
-  }
-
-  & > .bottom-navbar {
-    .btn-chat {
-      display: none;
-    }
   }
 }
 
@@ -113,11 +107,11 @@ svg {
 }
 
 .bottom-navbar .navbar-link {
-  &:nth-of-type(1) svg {
+  & .icon-activities {
     width: 27px;
     height: 27px;
   }
-  &:nth-of-type(2) svg {
+  & .icon-profile {
     width: 22px;
     height: 22px;
   }
@@ -129,6 +123,7 @@ svg {
     height: 100vh;
     flex-direction: column;
     justify-content: space-between;
+    box-shadow: 4px 0px 6px 0px rgba(46, 46, 46, 0.25);
 
     & > .top-navbar,
     & > .bottom-navbar {
@@ -136,6 +131,22 @@ svg {
       align-items: center;
       gap: 1.5rem;
       width: 100%;
+    }
+
+    & > .middle-navbar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      width: 100%;
+
+      & > .navbar-link {
+        transition: transform 0.3s ease-in-out;
+
+        &:hover {
+          transform: scale(1.2);
+        }
+      }
     }
 
     & > .top-navbar {
@@ -147,23 +158,6 @@ svg {
     & > .bottom-navbar {
       justify-content: flex-end;
       padding-bottom: 1.25rem;
-
-      .btn-chat {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.3rem;
-
-        img {
-          width: 2.25rem;
-        }
-
-        p {
-          font-family: var(--body-font);
-          font-size: var(--body-desktop-size);
-          color: var(--light-color);
-        }
-      }
     }
   }
 
@@ -184,7 +178,7 @@ svg {
       font-size: var(--title-desktop-size);
     }
 
-    & > img {
+    & a > img {
       width: 4.5rem;
     }
   }
@@ -198,25 +192,14 @@ svg {
     &.link-publication {
       position: static;
       transform: none;
-      width: auto;
-      height: auto;
-      background: none;
+      width: 60px;
+      height: 60px;
       box-shadow: none;
-      justify-content: space-between;
+      justify-content: center;
 
-      p {
-        display: block;
-        margin-top: 5px;
-      }
-
-      &.link-publication-active {
-        svg {
-          fill: var(--button-color);
-        }
-
-        p {
-          color: var(--button-color);
-        }
+      & > svg {
+        width: 35px;
+        height: 35px;
       }
     }
   }
@@ -239,27 +222,33 @@ svg {
 
   .top-navbar .navbar-link {
     &:nth-of-type(1) svg {
-      width: 48px;
-      height: 48px;
-    }
-    &:nth-of-type(2) svg {
-      width: 36px;
-      height: 36px;
-    }
-    &:nth-of-type(3) svg {
       width: 40px;
       height: 40px;
+    }
+    &:nth-of-type(2) svg {
+      width: 30px;
+      height: 30px;
+    }
+    &:nth-of-type(3) svg {
+      width: 32px;
+      height: 32px;
     }
   }
 
   .bottom-navbar .navbar-link {
-    &:nth-of-type(1) svg {
-      width: 48px;
-      height: 48px;
+    & .icon-chat {
+      width: 32px;
+      height: 32px;
     }
-    &:nth-of-type(2) svg {
+
+    & .icon-activities {
       width: 40px;
       height: 40px;
+    }
+
+    & .icon-profile {
+      width: 32px;
+      height: 32px;
     }
   }
 }

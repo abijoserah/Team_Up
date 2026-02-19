@@ -19,7 +19,7 @@
     font-size: var(--title-size);
   }
 
-  & > img {
+  & a > img {
     width: 4rem;
   }
 

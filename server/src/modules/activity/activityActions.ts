@@ -1,13 +1,19 @@
 import type { RequestHandler } from "express";
 import { StatusCodes } from "http-status-codes";
 import participationRepository from "../participation/participationRepository";
-import activityRepository from "./activityRepository";
+import activityRepository from "../activity/activityRepository";
+import mailService from "../../services/mailService";
 
 const add: RequestHandler = async (req, res, next) => {
   try {
-    const { activity, guestIds } = req.body;
+    if (!req.auth.sub) {
+      res.sendStatus(StatusCodes.UNAUTHORIZED);
+      return;
+    }
 
-    if (!activity.visibility && guestIds.length === 0) {
+    const { activity, guests } = req.body;
+
+    if (!activity.visibility && guests.length === 0) {
       res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
         error: "Une activité privée doit avoir au moins un participant",
       });
@@ -15,15 +21,22 @@ const add: RequestHandler = async (req, res, next) => {
     }
 
     const activityId = await activityRepository.create(activity);
+    const newsParticipants = guests.map((guest: Partial<User>) => ({
+      userId: guest.id,
+      activityId: activityId,
+      status: "inviting",
+    }));
 
     if (!activity.visibility) {
-      guestIds.map(async (userId: number) => {
-        await participationRepository.create({
-          userId,
+      for (const newParticipant of newsParticipants) {
+        await participationRepository.create(newParticipant);
+        const mailData = await activityRepository.readWithOrganizer(
           activityId,
-          status: "inviting",
-        });
-      });
+          newParticipant.userId,
+        );
+
+        await mailService.sendInvitationEmail(mailData);
+      }
     }
 
     res.status(StatusCodes.CREATED).json();
@@ -38,11 +51,15 @@ const browse: RequestHandler = async (req, res, next) => {
     const page = Number.parseInt(req.query.page as string, 10) || 1;
     const limit = Number.parseInt(req.query.limit as string, 10) || 10;
 
+    const userId = req.auth?.sub ? Number(req.auth.sub) : null;
+
     const filters: Filters =
       req.query.filters && JSON.parse(req.query.filters as string);
 
+    const sort = req.query.sort && JSON.parse(req.query.sort as string);
+
     const { activities, totalActivities, totalPages } =
-      await activityRepository.readAll(page, limit, filters);
+      await activityRepository.readAll(page, limit, filters, userId, sort);
 
     res.json({
       activities: activities,
@@ -60,7 +77,13 @@ const browse: RequestHandler = async (req, res, next) => {
 
 const browseMine: RequestHandler = async (req, res, next) => {
   try {
-    const userId = 1;
+    if (!req.auth.sub) {
+      res.sendStatus(StatusCodes.UNAUTHORIZED);
+      return;
+    }
+
+    const userId = Number(req.auth.sub);
+
     const status = req.query.status as string;
 
     const activities = await activityRepository.readAllByUserAndStatus(
@@ -68,7 +91,7 @@ const browseMine: RequestHandler = async (req, res, next) => {
       status,
     );
 
-    res.status(200).json(activities);
+    res.status(StatusCodes.OK).json(activities);
   } catch (err) {
     next(err);
   }
@@ -76,7 +99,7 @@ const browseMine: RequestHandler = async (req, res, next) => {
 
 const read: RequestHandler = async (req, res, next) => {
   try {
-    const activityId = Number.parseInt(req.params.id, 10);
+    const activityId = Number(req.params.id);
 
     const activity = await activityRepository.readOne(activityId);
 
@@ -91,4 +114,23 @@ const read: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default { add, browse, browseMine, read };
+const verifyNbAvaiableSpots: RequestHandler = async (req, res, next) => {
+  try {
+    const activityId = req.body.activityId;
+
+    const activity = await activityRepository.readOne(activityId);
+
+    if (activity?.nb_participant === activity?.nb_spots) {
+      res.status(StatusCodes.CONFLICT).json({
+        error: "ACTIVITY_FULL",
+      });
+      return;
+    }
+
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export default { add, browse, browseMine, read, verifyNbAvaiableSpots };

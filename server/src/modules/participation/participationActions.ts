@@ -1,4 +1,5 @@
 import type { RequestHandler } from "express";
+import { StatusCodes } from "http-status-codes";
 import participationRepository from "./participationRepository";
 import ParticipationRepository from "./participationRepository";
 import activityRepository from "../activity/activityRepository";
@@ -10,8 +11,30 @@ const browseByActivity: RequestHandler = async (req, res, next) => {
 
     const participants =
       await participationRepository.readAllParticipants(activityId);
-
     res.json(participants);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const browseUserActivity: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = Number(req.query.userId);
+
+    if (!userId) {
+      res.status(400).json({ message: "UserId is required" });
+      return;
+    }
+
+    const activitiesUserEnrolled =
+      await participationRepository.readUserActity(userId);
+
+    if (activitiesUserEnrolled.length === 0) {
+      res.sendStatus(204);
+      return;
+    }
+
+    res.status(201).json(activitiesUserEnrolled);
   } catch (err) {
     next(err);
   }
@@ -19,57 +42,46 @@ const browseByActivity: RequestHandler = async (req, res, next) => {
 
 const add: RequestHandler = async (req, res, next) => {
   try {
-    const response = await participationRepository.create(req.body);
-
-    res.json(response);
-  } catch (err) {
-    next(err);
-  }
-};
-
-const edit: RequestHandler = async (req, res, next) => {
-  try {
-    const id = Number(req.params.id);
-    const { status } = req.body;
-
-    const affectedRows = await participationRepository.patch(id, status);
-
-    if (affectedRows === 0) {
-      res.sendStatus(404);
-    } else {
-      res.sendStatus(204);
-    }
-  } catch (err) {
-    next(err);
-  }
-};
-
-const browseSome: RequestHandler = async (req, res, next) => {
-  try {
-    const userId = Number(req.query.userId);
-
-    if (!userId) {
-      res.json({
-        message: "User is not enrolled in any activity",
-      });
+    if (!req.auth.sub) {
+      res.sendStatus(StatusCodes.UNAUTHORIZED);
       return;
     }
 
-    const activitiesUserEnrolled = await participationRepository.read({
-      userId,
-    });
+    const response = await participationRepository.create(req.body);
 
-    res.status(201).json(activitiesUserEnrolled.map((a) => a.activity_id));
-  } catch (err) {
+    const mailData = await activityRepository.readWithOrganizer(
+      req.body.activityId,
+      req.body.userId,
+    );
+
+    if (!mailData.visibility) {
+      await mailService.sendInvitationEmail(mailData);
+    }
+
+    if (mailData.visibility) {
+      await mailService.sendRequestEmail(mailData);
+    }
+
+    res.json(response);
+  } catch (err: unknown) {
+    if (
+      err instanceof Error &&
+      (err as { code?: string }).code === "ER_DUP_ENTRY"
+    ) {
+      res.status(StatusCodes.CONFLICT).json({ error: "ALREADY_INVITED" });
+    }
     next(err);
   }
 };
 
 const editStatus: RequestHandler = async (req, res, next) => {
   try {
-    const { userId, activityId, status, participantUsername } = req.body;
+    if (!req.auth.sub) {
+      res.sendStatus(StatusCodes.UNAUTHORIZED);
+      return;
+    }
 
-    console.log(req.body);
+    const { userId, activityId, status, participantUsername, type } = req.body;
 
     const result = await ParticipationRepository.update(
       userId,
@@ -77,17 +89,25 @@ const editStatus: RequestHandler = async (req, res, next) => {
       status,
     );
 
-    console.log(result);
+    if (
+      (status === "accepted" || status === "refused") &&
+      type === "invitation"
+    ) {
+      const mailData = await activityRepository.readWithOrganizer(
+        activityId,
+        userId,
+      );
 
-    if (status === "accepted") {
-      const activity = await activityRepository.readWithOrganizer(activityId);
+      await mailService.sendAnswerInvitationEmail(mailData, status);
+    }
 
-      await mailService.sendInvitationAcceptedEmail({
-        organizerEmail: activity.organizer_email,
-        organizerUsername: activity.organizer_username,
-        activityName: activity.name,
-        participantUsername: participantUsername,
-      });
+    if ((status === "accepted" || status === "refused") && type === "request") {
+      const mailData = await activityRepository.readWithOrganizer(
+        activityId,
+        userId,
+      );
+
+      await mailService.sendAnswerRequestEmail(mailData, status);
     }
 
     res.json({ message: "Participation updated", result });
@@ -96,23 +116,9 @@ const editStatus: RequestHandler = async (req, res, next) => {
   }
 };
 
-const deleteParticipation: RequestHandler = async (req, res, next) => {
-  try {
-    const { userId, activityId } = req.body;
-
-    const result = await ParticipationRepository.delete(userId, activityId);
-
-    res.json({ message: "Participation deleted", result });
-  } catch (err) {
-    next(err);
-  }
-};
-
 export default {
   add,
-  browseSome,
+  browseUserActivity,
   editStatus,
-  deleteParticipation,
-  edit,
   browseByActivity,
 };

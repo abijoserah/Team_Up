@@ -1,8 +1,8 @@
 import { AppBar, Box, Tab, Tabs } from "@mui/material";
 
 type SegmentedControlProps = {
-  selectedTab: number;
-  setSelectedTab: React.Dispatch<React.SetStateAction<number>>;
+  selectedTab: string;
+  setSelectedTab: React.Dispatch<React.SetStateAction<string>>;
 };
 
 function ActivityTabs({ selectedTab, setSelectedTab }: SegmentedControlProps) {
@@ -70,17 +70,17 @@ function ActivityTabs({ selectedTab, setSelectedTab }: SegmentedControlProps) {
               color: "var(--light-color)",
               boxShadow: "inset 0 4px 4px 0 rgba(0,0,0,0.25)",
               borderRadius:
-                selectedTab === 0
+                selectedTab === "incoming"
                   ? "12px 0 0 12px"
-                  : selectedTab === 2
+                  : selectedTab === "pending"
                     ? "0 12px 12px 0"
                     : "0",
             },
           }}
         >
-          <Tab label="À venir" />
-          <Tab label="Publiées" />
-          <Tab label="En attente" />
+          <Tab label="À venir" value="incoming" />
+          <Tab label="Publiées" value="published" />
+          <Tab label="En attente" value="pending" />
         </Tabs>
       </AppBar>
     </Box>

@@ -5,12 +5,12 @@ type NewUser = {
   username: string;
   password: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  firstname: string;
+  lastname: string;
   born_at: string;
   address: string;
   city: string;
-  zipCode: string;
+  zip_code: string;
   phone: string;
   picture: string;
 };
@@ -18,11 +18,29 @@ type NewUser = {
 class userRepository {
   async readByEmail(email: string) {
     const [rows] = await databaseClient.query<Rows>(
-      "SELECT user.id, user.username, user.picture, user.email FROM user WHERE user.email = ?",
+      "SELECT user.id, user.username, user.picture, user.password, user.email FROM user WHERE user.email = ?",
       [email],
     );
 
-    return rows[0] as Partial<User>;
+    return rows[0] as Omit<
+      User,
+      | "firstname"
+      | "lastname"
+      | "born_at"
+      | "adress"
+      | "city"
+      | "zip_code"
+      | "phone"
+    >;
+  }
+
+  async readById(id: number) {
+    const [rows] = await databaseClient.query<Rows>(
+      "SELECT id, email, username, firstname, lastname, born_at, address, city, zip_code, phone, picture FROM user WHERE id = ?",
+      [id],
+    );
+
+    return rows[0] as User | undefined;
   }
 
   async create(newUser: NewUser) {
@@ -45,12 +63,12 @@ class userRepository {
         newUser.username,
         newUser.password,
         newUser.email,
-        newUser.firstName,
-        newUser.lastName,
+        newUser.firstname,
+        newUser.lastname,
         newUser.born_at,
         newUser.address,
         newUser.city,
-        newUser.zipCode,
+        newUser.zip_code,
         newUser.phone,
         newUser.picture,
       ],

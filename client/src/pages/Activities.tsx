@@ -1,11 +1,12 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import ActivityCard from "../components/ActivityCard";
-import "../styles/Activity.css";
+import "../styles/Activities.css";
 import { useNavigate, useParams } from "react-router";
 import Pagination from "../components/Pagination";
 import SearchBar from "../components/SearchBar";
 import SearchFilters from "../components/SearchFilters";
 import { useMediaQuery } from "react-responsive";
+import { useAuth } from "../context/AuthContext";
 
 const tagLabelTranslations = [
   { key: "locker", label: "Vestiaires" },
@@ -14,9 +15,9 @@ const tagLabelTranslations = [
   { key: "air_conditioning", label: "Climatisation" },
   { key: "disabled", label: "Handisport" },
   { key: "all", label: "Tout Niveu" },
-  { key: "amateur", label: "Débutant" },
-  { key: "begginer", label: "Intermédiaire" },
-  { key: "advance", label: "Confirmé" },
+  { key: "beginner", label: "Débutant" },
+  { key: "amateur", label: "Intermédiaire" },
+  { key: "advanced", label: "Confirmé" },
 ];
 
 const sortingCondition = [
@@ -26,7 +27,6 @@ const sortingCondition = [
 ];
 
 const LIMIT = 10;
-const userId = 1; // Replace userId with context loged in variable
 const excludeFromFilterTags = ["sport", "playingAt", "city"];
 
 function Activities() {
@@ -42,7 +42,10 @@ function Activities() {
   });
   const [totalPages, setTotalPages] = useState(1);
   const [sortOpen, setSortOpen] = useState(false);
+  const [sort, setSort] = useState("");
   const navigate = useNavigate();
+
+  const { auth } = useAuth();
 
   const translateTaglables = useCallback((key: string, value: string) => {
     const translateOptions = tagLabelTranslations.find((item) => {
@@ -103,133 +106,109 @@ function Activities() {
 
   useEffect(() => {
     const fetchAndFilterActivities = async () => {
-      let enrolledActivityIds: number[] = [];
-
-      if (userId) {
-        const enrollmentsResponse = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/participations?userId=${userId}`,
-        );
-        enrolledActivityIds = await enrollmentsResponse.json();
-      }
-
       const queryString = new URLSearchParams({
         filters: JSON.stringify(filters),
+        sort: JSON.stringify(sort),
       }).toString();
 
       const activitiesResponse = await fetch(
         `${import.meta.env.VITE_API_URL}/api/activities?page=${currentPage}&limit=${LIMIT}&${queryString}`,
+        {
+          method: "GET",
+          headers: auth?.token ? { Authorization: `Bearer ${auth.token}` } : {},
+        },
       );
 
       const activitiesData = await activitiesResponse.json();
 
-      const filteredActivities = userId
-        ? activitiesData.activities.filter(
-            (a: Activity) => !enrolledActivityIds.includes(a.id),
-          )
-        : activitiesData.activities;
-
-      setActivities(filteredActivities);
+      setActivities(activitiesData.activities);
       setTotalPages(activitiesData.pagination.totalPages);
       setTotalActivities(activitiesData.pagination.totalActivities);
     };
 
     fetchAndFilterActivities();
-  }, [currentPage, filters]);
-
-  const sortActivities = (item: string) => {
-    const sortedActivities = [...activities];
-
-    if (item === "recent") {
-      sortedActivities.sort(
-        (a, b) =>
-          new Date(b.playing_at).getTime() - new Date(a.playing_at).getTime(),
-      );
-    }
-
-    if (item === "oldest") {
-      sortedActivities.sort(
-        (a, b) =>
-          new Date(a.playing_at).getTime() - new Date(b.playing_at).getTime(),
-      );
-    }
-
-    if (item === "price") {
-      sortedActivities.sort((a, b) => Number(a.price) - Number(b.price));
-    }
-
-    setActivities(sortedActivities);
-  };
+  }, [currentPage, filters, sort, auth]);
 
   return (
     <>
       {!isMobile && <p className="tagline">Que recherchez-vous ?</p>}
       <section className="page-activities">
         <div className="activities-container">
-          <SearchBar setFilters={setFilters} />
+          <SearchBar setFilters={setFilters} filters={filters} />
           <div className="header-activity">
             <h1>Activités disponibles</h1>
-            {!sortOpen ? (
-              <div className="sort-dropdown-wrapper">
-                <button
-                  type="button"
-                  className="sort-button"
-                  onClick={() => setSortOpen(true)}
-                >
-                  <img
-                    src="/icons/Vector.svg"
-                    alt="sort-icon"
-                    className="sort-icon"
-                  />
-                </button>
-              </div>
-            ) : (
-              <div>
-                <button
-                  type="button"
-                  tabIndex={0}
-                  className="results-wrapper"
-                  onClick={() => setSortOpen(false)}
-                  onKeyUp={(e) => e.key === "Enter" && setSortOpen(false)}
-                >
-                  {totalActivities === 0 ? (
-                    ""
-                  ) : totalActivities < 2 ? (
-                    <p>{totalActivities} résultat</p>
-                  ) : (
-                    <p>{totalActivities} résultats</p>
-                  )}
-                </button>
-
-                <div className={`offscreen-menue ${sortOpen ? "active" : ""}`}>
-                  <div className="sort-header">
-                    <h3>Trie Par</h3>
-                    <button
-                      type="button"
-                      className="sort-close-btn"
-                      onClick={() => setSortOpen(false)}
-                    >
-                      <img className="xbtn" src="/icons/x.svg" alt="Close" />
-                    </button>
-                  </div>
-                  {sortingCondition.map((item) => {
-                    return (
-                      <label key={item.key} className="criteria-label">
-                        {item.label}
-                        <input
-                          type="radio"
-                          className="sort-options"
-                          value={item.key}
-                          name="sort"
-                          onClick={() => {
-                            sortActivities(item.key);
-                          }}
-                        />
-                      </label>
-                    );
-                  })}
+            <div className="result-wrapper">
+              {totalActivities === 0 ? (
+                ""
+              ) : totalActivities < 2 ? (
+                <p>{totalActivities} résultat</p>
+              ) : (
+                <p>{totalActivities} résultats</p>
+              )}
+              {!sortOpen ? (
+                <div className="sort-dropdown-wrapper">
+                  <button
+                    type="button"
+                    className="sort-button"
+                    onClick={() => setSortOpen(true)}
+                  >
+                    <img
+                      src="/icons/Vector.svg"
+                      alt="sort-icon"
+                      className="sort-icon"
+                    />
+                  </button>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div>
+                  <button
+                    type="button"
+                    tabIndex={0}
+                    className="sort-button"
+                    onClick={() => setSortOpen(false)}
+                    onKeyUp={(e) => e.key === "Enter" && setSortOpen(false)}
+                  >
+                    <img
+                      src="/icons/Vector.svg"
+                      alt="sort-icon"
+                      className="sort-icon"
+                    />
+                  </button>
+
+                  <div
+                    className={`offscreen-menue ${sortOpen ? "active" : ""}`}
+                  >
+                    <div className="sort-header">
+                      <h3>Trier Par</h3>
+                      <button
+                        type="button"
+                        className="sort-close-btn"
+                        onClick={() => setSortOpen(false)}
+                      >
+                        <img className="xbtn" src="/icons/x.svg" alt="Close" />
+                      </button>
+                    </div>
+
+                    {sortingCondition.map((item) => {
+                      return (
+                        <label key={item.key} className="criteria-label">
+                          {item.label}
+                          <input
+                            type="radio"
+                            className="sort-options"
+                            value={item.key}
+                            name="sort"
+                            onClick={() => {
+                              setSort(item.key);
+                            }}
+                          />
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           <div className="filter-tag-container">
             {filterTags.map(({ key, value }) => (

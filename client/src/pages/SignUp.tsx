@@ -1,8 +1,10 @@
 import { Box, Button, TextField } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import { muiTheme } from "../theme/muiTheme";
-import { useEffect, useRef, useState } from "react";
-import "../styles/signUp.css";
+import { useState } from "react";
+import "../styles/SignUp.css";
+import { Link, useNavigate } from "react-router";
+import toast from "react-hot-toast";
 
 type NewUser = Omit<User, "id"> & {
   confirmPassword: string;
@@ -14,50 +16,59 @@ function SignUp() {
     password: "",
     confirmPassword: "",
     email: "",
-    firstName: "",
-    lastName: "",
+    firstname: "",
+    lastname: "",
     born_at: "",
     address: "",
     city: "",
-    zipCode: "",
+    zip_code: "",
     phone: "",
     picture: "",
   });
-  const [message, setMessage] = useState<string>("");
-  const messageSuccess = "Compte créé avec succès !";
-  const messageRef = useRef<HTMLParagraphElement | null>(null);
-  useEffect(() => {
-    if (message && messageRef.current) {
-      messageRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }
-  }, [message]);
+
+  const navigate = useNavigate();
+  const [error, setError] = useState({
+    field: "",
+    message: "",
+  });
+
   const Submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError({ field: "", message: "" });
     try {
-      const response = await fetch(import.meta.env.VITE_API_URL + "/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(user),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/users`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(user),
+        },
+      );
       if (!response.ok) {
-        switch (response.status) {
-          case 400:
-            setMessage("Données saisies invalides");
-            break;
-          case 409:
-            setMessage("Nom d'utilisateur déjà existant");
-            break;
-          default:
-            setMessage("Erreur serveur");
-        }
+        const errorData = await response.json();
+        errorData.message && errorData.path
+          ? setError({
+              field: errorData.path[0],
+              message: errorData.message,
+            })
+          : errorData.message
+            ? setError((prev) => ({ ...prev, message: errorData.message }))
+            : setError((prev) => ({ ...prev, message: "Erreur serveur" }));
         return;
       }
-      setMessage(messageSuccess);
+      navigate("/sign-in", {
+        state: {
+          from: "/sign-up",
+        },
+      });
+      setTimeout(() => {
+        toast.success("Compte créé avec succès");
+      }, 50);
     } catch (error) {
-      setMessage("Impossible de contacter le serveur");
+      setError((prev) => ({
+        ...prev,
+        message: "Impossible de contacter le serveur",
+      }));
     }
   };
   const ChangeInput = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,11 +77,14 @@ function SignUp() {
       ...prev,
       [name]: value,
     }));
+    if (error.field) {
+      setError({ field: "", message: "" });
+    }
   };
 
   return (
     <div id="sign-up">
-      <h1>CÉER UN COMPTE</h1>
+      <h1>CRÉER UN COMPTE</h1>
       <ThemeProvider theme={muiTheme}>
         <Box
           component="form"
@@ -78,131 +92,150 @@ function SignUp() {
           onSubmit={Submit}
           sx={{
             marginTop: "2vh",
-            mx: "auto",
             display: "flex",
             flexDirection: "column",
             gap: "3vh",
+            width: "70%",
           }}
         >
+          <div>
+            <TextField
+              label="Nom d'utilisateur"
+              required
+              variant="outlined"
+              size="small"
+              name="username"
+              value={user.username}
+              onChange={ChangeInput}
+              error={error.field === "username"}
+            />
+            <TextField
+              label="Email"
+              required
+              variant="outlined"
+              size="small"
+              name="email"
+              value={user.email}
+              onChange={ChangeInput}
+              error={error.field === "email"}
+            />
+          </div>
+          <div>
+            <TextField
+              label="Mot de passe"
+              type="password"
+              autoComplete="password"
+              required
+              variant="outlined"
+              size="small"
+              name="password"
+              value={user.password}
+              onChange={ChangeInput}
+              error={error.field === "password"}
+            />
+            <TextField
+              label="Confirmer mot de passe"
+              type="password"
+              autoComplete="confirmPassword"
+              required
+              variant="outlined"
+              size="small"
+              name="confirmPassword"
+              value={user.confirmPassword}
+              onChange={ChangeInput}
+              error={error.field === "confirmPassword"}
+            />
+          </div>
+          <p className="champs-requis">
+            Min. 8 caractères : 1 maj, 1 min, 1 chiffre, 1 symbole.
+          </p>
+          <div>
+            <TextField
+              label="Prénom"
+              required
+              variant="outlined"
+              size="small"
+              name="firstname"
+              value={user.firstname}
+              onChange={ChangeInput}
+              error={error.field === "firstname"}
+            />
+            <TextField
+              label="Nom"
+              required
+              variant="outlined"
+              size="small"
+              name="lastname"
+              value={user.lastname}
+              onChange={ChangeInput}
+              error={error.field === "lastname"}
+            />
+          </div>
           <TextField
-            label="Nom d'utilisateur"
-            required
-            variant="outlined"
-            size="small"
-            name="username"
-            value={user.username}
-            onChange={ChangeInput}
-          />
-          <TextField
-            label="Mot de passe"
-            type="password"
-            autoComplete="password"
-            required
-            variant="outlined"
-            size="small"
-            name="password"
-            value={user.password}
-            onChange={ChangeInput}
-          />
-          <TextField
-            label="Confirme mot de passe"
-            type="password"
-            autoComplete="confirmPassword"
-            required
-            variant="outlined"
-            size="small"
-            name="confirmPassword"
-            value={user.confirmPassword}
-            onChange={ChangeInput}
-          />
-          <TextField
-            label="Email"
-            required
-            variant="outlined"
-            size="small"
-            name="email"
-            value={user.email}
-            onChange={ChangeInput}
-          />
-          <TextField
-            label="Prénom"
-            required
-            variant="outlined"
-            size="small"
-            name="firstName"
-            value={user.firstName}
-            onChange={ChangeInput}
-          />
-          <TextField
-            label="Nom"
-            required
-            variant="outlined"
-            size="small"
-            name="lastName"
-            value={user.lastName}
-            onChange={ChangeInput}
-          />
-          <TextField
-            label="Date de naissance"
-            type="date"
-            required
-            variant="outlined"
-            size="small"
-            name="born_at"
-            value={user.born_at}
-            onChange={ChangeInput}
-            slotProps={{ inputLabel: { shrink: true } }}
-          />
-          <TextField
-            label="Address"
+            label="Addresse"
             required
             variant="outlined"
             size="small"
             name="address"
             value={user.address}
             onChange={ChangeInput}
+            error={error.field === "address"}
           />
-          <TextField
-            label="Ville"
-            required
-            variant="outlined"
-            size="small"
-            name="city"
-            value={user.city}
-            onChange={ChangeInput}
-          />
-          <TextField
-            label="Code postal"
-            required
-            variant="outlined"
-            size="small"
-            name="zipCode"
-            value={user.zipCode}
-            onChange={ChangeInput}
-          />
-          <TextField
-            label="Téléphone"
-            required
-            variant="outlined"
-            size="small"
-            name="phone"
-            value={user.phone}
-            onChange={ChangeInput}
-          />
-          <TextField
-            label="URL photo"
-            variant="outlined"
-            size="small"
-            name="picture"
-            value={user.picture}
-            onChange={ChangeInput}
-          />
+          <div>
+            <TextField
+              label="Ville"
+              required
+              variant="outlined"
+              size="small"
+              name="city"
+              value={user.city}
+              onChange={ChangeInput}
+              error={error.field === "city"}
+            />
+            <TextField
+              label="Code postal"
+              required
+              variant="outlined"
+              size="small"
+              name="zip_code"
+              value={user.zip_code}
+              onChange={ChangeInput}
+              error={error.field === "zip_code"}
+            />
+          </div>
+          <div>
+            <TextField
+              label="Téléphone"
+              required
+              variant="outlined"
+              size="small"
+              name="phone"
+              value={user.phone}
+              onChange={ChangeInput}
+              error={error.field === "phone"}
+            />
+            <TextField
+              label="Date de naissance"
+              type="date"
+              required
+              variant="outlined"
+              size="small"
+              name="born_at"
+              value={user.born_at}
+              onChange={ChangeInput}
+              slotProps={{ inputLabel: { shrink: true } }}
+              error={error.field === "born_at"}
+            />
+          </div>
+          <p className={"message-error"}>{error.message}</p>
           <Button
             type="submit"
             variant="contained"
             size="large"
             sx={{
+              marginBottom: "2rem",
               fontSize: "button-mobile",
+              borderRadius: "10px",
               backgroundColor: "var(--button-color)",
               "&:hover": {
                 backgroundColor:
@@ -214,13 +247,11 @@ function SignUp() {
           </Button>
         </Box>
       </ThemeProvider>
-      <p
-        ref={messageRef}
-        className={
-          message === messageSuccess ? "message-success" : "message-error"
-        }
-      >
-        {message}
+      <p className="link-to">
+        Si vous êtes déjà inscrit :{" "}
+        <Link to="/sign-in" state={{ from: "/sign-up" }}>
+          Cliquez ici !
+        </Link>
       </p>
     </div>
   );

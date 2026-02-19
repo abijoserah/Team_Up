@@ -4,10 +4,10 @@
   align-items: center;
   font-family: var(--heading-font);
   color: var(--dark-color);
-  margin-bottom: 10rem;
+  margin-bottom: 12rem;
 
   & > h1 {
-    margin-top: 1rem;
+    margin-top: 2rem;
     font-size: var(--heading-size);
   }
 }
@@ -20,6 +20,12 @@
 }
 
 @media (min-width: 1024px) {
+  #my-activities {
+    width: calc(100% - 8rem);
+    margin-left: 8rem;
+    gap: 1.5rem;
+  }
+
   .cards-myactivities {
     width: 100%;
     grid-template-columns: repeat(auto-fit, 320px);

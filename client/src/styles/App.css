@@ -14,6 +14,10 @@ main {
   overflow-y: auto;
 }
 
+.react-hot-toast {
+  font-family: var(--title-font);
+}
+
 h1 {
   font-family: var(--heading-font);
   font-size: var(--heading-size);

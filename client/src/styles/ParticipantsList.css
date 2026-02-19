@@ -174,6 +174,18 @@ ul.participant-list li p img.vector {
   height: 8px;
 }
 
+.no-picture {
+  width: 32px;
+  height: 32px;
+  border-radius: 32px;
+  background-color: var(--dark-color);
+  color: var(--light-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--title-size);
+}
+
 .error-text {
   color: var(--refused-color);
   font-family: var(--body-font);
@@ -185,7 +197,7 @@ ul.participant-list li p img.vector {
   border: 1px solid var(--refused-color);
   border-radius: 10px;
   margin: 0 auto 5px auto;
-  width: 185px;
+  width: 256px;
   height: 5px;
   animation: error-message-display 0.5s both;
 }

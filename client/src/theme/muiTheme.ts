@@ -8,9 +8,6 @@ export const muiTheme = createTheme({
           "& .MuiOutlinedInput-notchedOutline": {
             borderColor: "var(--input-color)",
           },
-          "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: "var(--input-color)",
-          },
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
             borderColor: "var(--input-color)",
           },

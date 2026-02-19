@@ -61,12 +61,23 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: var(--light-color);
+}
+
+.sort-close-btn {
+  background-color: var(--light-color);
+}
+
+.result-wrapper {
+  display: flex;
+  align-items: center;
 }
 
 .sort-icon {
   width: 18px;
   height: 18px;
   margin-left: 10px;
+  background-color: var(--light-color);
 }
 
 .sort-dropdown-wrapper {
@@ -83,11 +94,17 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.4rem;
+
+  & > h3 {
+    font-family: var(--body-highlight-font);
+    font-size: var(--body-size);
+  }
 }
 
 .xbtn {
   width: 14px;
   height: 14px;
+  background-color: var(--light-color);
 }
 
 .offscreen-menue {
@@ -160,6 +177,7 @@
 
     & > h1 {
       font-size: var(--title-desktop-size);
+      margin-top: 0.5rem;
     }
 
     & p {
@@ -175,5 +193,11 @@
   .offscreen-menue {
     margin-right: 24px;
     margin-bottom: 0.8rem;
+  }
+
+  .sort-header {
+    & > h3 {
+      font-size: var(--body-desktop-size);
+    }
   }
 }
